@@ -1,0 +1,79 @@
+﻿@page "/weather"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using Aspire.ProjectTemplate.Core.Models
+@using Microsoft.FluentUI.AspNetCore.Components
+@using SortDirection = ProjectTemplate.Core.Models.SortDirection
+@inject IMessageService MessageService
+@inject WeatherApiClient WeatherApi
+
+<PageTitle>Weather</PageTitle>
+
+<h1>Weather</h1>
+
+<p>This component demonstrates showing data loaded from a backend API service.</p>
+
+<FluentMessageBarProvider Section="MESSAGES_TOP" Format="MessageFormat.Notification"/>
+
+<FluentDataGrid Id="weathergrid" ItemsProvider="WeatherForecastProvider" Pagination="@_pagination" TGridItem="WeatherForecastResponse" ItemKey="c => c.Id" Loading="@_isLoading">
+    <PropertyColumn Title="Date" Property="@(c => c!.Date)" Sortable="true" Align="Align.Start"/>
+    <PropertyColumn Title="Temp. (C)" Property="@(c => c!.TemperatureC)" Sortable="true" Align="Align.Center" />
+    <PropertyColumn Title="Temp. (F)" Property="@(c => c!.TemperatureF)" Sortable="true" Align="Align.Center"/>
+    <PropertyColumn Title="Summary" Property="@(c => c!.Summary)" Sortable="true" Align="Align.End"/>
+</FluentDataGrid>
+
+<FluentPaginator State="@_pagination"/>
+
+@code {
+    private bool _isLoading; // Flag to indicate data loading state
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+
+    private async ValueTask<GridItemsProviderResult<WeatherForecastResponse>> WeatherForecastProvider(
+    GridItemsProviderRequest<WeatherForecastResponse> req)
+    {
+        _isLoading = true; // Set Loading to true when fetching starts
+        StateHasChanged(); // Trigger UI refresh to show the loading state
+
+        try
+        {
+            var columnMappings = new Dictionary<string, string>
+            {
+                { "Date", "Date" },
+                { "Temp. (C)", "TemperatureC" },
+                { "Temp. (F)", "TemperatureC" },
+                { "Summary", "Summary" }
+            };
+
+            // Create a pagination request based on the current pagination state
+            var paginationRequest = new PaginationRequest
+                {
+                    SortBy = columnMappings[req.SortByColumn?.Title ?? "Date"],
+                    Direction = req.SortByAscending ? SortDirection.Asc : SortDirection.Desc,
+                    Page = (req.StartIndex / _pagination.ItemsPerPage) + 1, // Calculate the current page
+                    Size = _pagination.ItemsPerPage // Use items per page from pagination state
+                };
+
+            var results = await WeatherApi.GetWeatherAsync(paginationRequest);
+
+            return GridItemsProviderResult.From(
+                results.Items.ToList(),
+                results.TotalCount);
+        }
+        catch (Exception ex)
+        {
+            await MessageService.ShowMessageBarAsync(options =>
+            {
+                options.Title = ex.Message;
+                options.Intent = MessageIntent.Error;
+                options.Section = "MESSAGES_TOP";
+                options.Timeout = 4000;
+            });
+
+            return GridItemsProviderResult.From(new List<WeatherForecastResponse>(), 0); // Return empty results to avoid breaking the grid
+        }
+        finally
+        {
+            _isLoading = false; // Set Loading to false once data is loaded or failed
+            StateHasChanged(); // Trigger UI refresh to hide the loading state
+        }
+    }
+}

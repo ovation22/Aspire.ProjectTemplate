@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
+    <UserSecretsId>baa5ca2c-74ee-45b2-bb77-976f4a54d85d</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aspire.ProjectTemplate.ApiService\Aspire.ProjectTemplate.ApiService.csproj" />
+    <ProjectReference Include="..\Aspire.ProjectTemplate.Web\Aspire.ProjectTemplate.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.0.0" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="9.0.0" />
+    <PackageReference Include="Aspire.Hosting.Seq" Version="9.0.0" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.0.0" />
+    <PackageReference Include="Aspire.Seq" Version="9.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.2" />
+  </ItemGroup>
+
+</Project>
